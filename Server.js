@@ -9,6 +9,7 @@ dotenv.config();
 import multer from 'multer';
 import CategoriesRouter from './routes/Categories.js';
 import ProductsRouter from './routes/Products.js';
+import SubCategoryRouter from './routes/SubCategory.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -91,7 +92,7 @@ app.use('/uploads', upload.array('images'), async (req, res) => {
             req.files.map(file => fs.unlink(file.path))
         );
 
-        console.log('urls',imageUrls)
+        console.log('urls', imageUrls)
 
         res.json({ message: 'Files uploaded', urls: imageUrls });
     } catch (err) {
@@ -115,6 +116,7 @@ app.get('/coutrylist', async (req, res) => {
 
 app.use('/categories', CategoriesRouter);
 app.use('/products', ProductsRouter);
+app.use('/subcategory', SubCategoryRouter);
 
 
 app.listen(process.env.PORT, () => {

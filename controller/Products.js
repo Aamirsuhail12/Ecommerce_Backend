@@ -1,15 +1,52 @@
 
 
+
 import Categories from "../model/Categories.js";
 import Product from "../model/Products.js"
 import cloudinary from 'cloudinary';
+import Subcategory from '../model/SubCategory.js'
+
+const buildFilter = async (filter) => {
 
 
+   let fil = {};
+
+   if (filter.category) {
+      const cat = await Categories.findOne({ name: filter.category })
+
+      fil.category = cat._id;
+   }
+
+   if (filter.subcategory) {
+      const cat = await Subcategory.findOne({ subcategory: filter.subcategory })
+      fil.subcategory = cat._id;
+   }
+
+   if (filter.min >= 0 || filter.max) {
+      fil.price = {}
+      if (filter.min >= 0)
+         fil.price.$gte = Number(filter.min)
+
+      if (filter.max)
+         fil.price.$lte = Number(filter.max)
+   }
+
+
+   if (filter.brand) {
+      fil.brand = filter.brand;
+   }
+
+   return fil;
+}
 export const getAll = async (req, res) => {
 
    try {
       let currentPage = Number(req.query.page) || 1;
-      const totalElements = await Product.countDocuments();
+      let filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter)) : {};
+
+      filter = await buildFilter(filter);
+
+      const totalElements = await Product.countDocuments(filter);
       const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
       const totalPage = Math.ceil(totalElements / elementPerPage);
 
@@ -17,7 +54,15 @@ export const getAll = async (req, res) => {
       if (currentPage < 0)
          currentPage = 1;
 
-      const products = await Product.find().populate('category').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
+      let products;
+      console.log('filter in backend', req.query.filter)
+      if (Object.keys(filter).length > 0) {
+         products = await Product.find(filter).populate('category').populate('subcategory').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
+
+      }
+      else
+         products = await Product.find().populate('category').populate('subcategory').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
+
       res.status(200).json({
          'products': products,
          'totalPage': totalPage
@@ -32,7 +77,7 @@ export const get = async (req, res) => {
 
    try {
       const id = req.params.id;
-      const product = await Product.findById(id).populate('category');
+      const product = await Product.findById(id).populate('category').populate('subcategory');
       res.status(200).json(product);
    } catch (error) {
       res.status(400).json({ error });
@@ -109,6 +154,12 @@ export const create = async (req, res) => {
          return res.status(404).json({ error: "Invalid category" });
       }
 
+      const isvalidsubcategory = await Subcategory.findById(req.body.subcategory)
+
+      if (!isvalidsubcategory) {
+         return res.status(404).json({ error: 'Invalid Subcategory' })
+      }
+
       if (!req.body.images || req.body.images.length === 0) {
          return res.status(400).json({ error: 'No images provided' });
       }
@@ -121,9 +172,14 @@ export const create = async (req, res) => {
          price: req.body.price,
          oldPrice: req.body.oldPrice,
          category: req.body.category,
+         subcategory: req.body.subcategory,
          countInStock: req.body.countInStock,
          rating: req.body.rating,
-         isFeatured: req.body.isFeatured
+         isFeatured: req.body.isFeatured,
+         discount: req.body.discount,
+         RAM: req.body.RAM,
+         weight: req.body.weight,
+         size: req.body.size
       });
 
       const savedProduct = await product.save();
@@ -158,6 +214,12 @@ export const update = async (req, res) => {
          return res.status(404).json({ error: "invalid category" })
       }
 
+      const isvalidsubcategory = await Subcategory.findById(req.body.subcategory)
+
+      if (!isvalidsubcategory) {
+         return res.status(404).json({ error: 'Invalid Subcategory' })
+      }
+
       const images = req.body.images;
 
       if (!Array.isArray(images)) {
@@ -181,10 +243,15 @@ export const update = async (req, res) => {
          brand: req.body.brand,
          price: req.body.price,
          category: req.body.category,
+         subcategory: req.body.subcategory,
          countInStock: req.body.countInStock,
          rating: req.body.rating,
          numReviews: req.body.numReviews,
-         isFeatured: req.body.isFeatured
+         isFeatured: req.body.isFeatured,
+         discount: req.body.discount,
+         RAM: req.body.RAM,
+         weight: req.body.weight,
+         size: req.body.size
       }
 
       const id = req.params.id;
