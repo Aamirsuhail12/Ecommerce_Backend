@@ -10,10 +10,14 @@ import multer from 'multer';
 import CategoriesRouter from './routes/Categories.js';
 import ProductsRouter from './routes/Products.js';
 import SubCategoryRouter from './routes/SubCategory.js'
+import AuthRouter from './routes/Auth.js';
+import UserRouter from './routes/User.js'
+import ReviewRounter from './routes/Review.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import cookieParser from 'cookie-parser';
 import fs from 'fs/promises'
 
 const app = express();
@@ -42,8 +46,28 @@ const upload = multer({ storage });
 
 
 //middlewares
-app.use(cors());
+// app.use(cors()); //only for browser security.
+// app.use(cors({
+//   origin: 'http://localhost:3000',
+//   credentials: true
+// }));
+
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        console.log('Origin received:', origin); // 📌 This prints every time browser requests
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true   // allow sending cookies
+}));
+
 app.use(express.json());
+app.use(cookieParser());
 
 //db connection 
 main().catch((err) => {
@@ -113,12 +137,18 @@ app.get('/coutrylist', async (req, res) => {
     }
 })
 
-
+app.use('/auth', AuthRouter);
+app.use('/users', UserRouter);
 app.use('/categories', CategoriesRouter);
 app.use('/products', ProductsRouter);
 app.use('/subcategory', SubCategoryRouter);
+app.use('/review', ReviewRounter);
 
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, '127.0.0.1', () => {
     console.log(`Server running on port ${process.env.PORT}`);
 })
+
+// '0.0.0.0' -> server accept requests from any other devices.
+// '127.0.0.1' -> server accept request from only same machine.
+

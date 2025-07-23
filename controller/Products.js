@@ -22,18 +22,28 @@ const buildFilter = async (filter) => {
       fil.subcategory = cat._id;
    }
 
-   if (filter.min >= 0 || filter.max) {
+   if (filter.price) {
       fil.price = {}
-      if (filter.min >= 0)
-         fil.price.$gte = Number(filter.min)
+      if (filter.price[0] >= 0)
+         fil.price.$gte = Number(filter.price[0])
 
-      if (filter.max)
-         fil.price.$lte = Number(filter.max)
+      if (filter.price[1])
+         fil.price.$lte = Number(filter.price[1])
    }
 
 
    if (filter.brand) {
       fil.brand = filter.brand;
+   }
+
+   if (filter._id) {
+      fil._id = {}
+      fil._id.$ne = filter._id
+   }
+
+   if(filter.isFeatured)
+   {
+      fil.isFeatured = true;
    }
 
    return fil;
@@ -44,7 +54,10 @@ export const getAll = async (req, res) => {
       let currentPage = Number(req.query.page) || 1;
       let filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter)) : {};
 
+      console.log('fil', filter)
       filter = await buildFilter(filter);
+      console.log('fil after', filter)
+
 
       const totalElements = await Product.countDocuments(filter);
       const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
@@ -55,7 +68,6 @@ export const getAll = async (req, res) => {
          currentPage = 1;
 
       let products;
-      console.log('filter in backend', req.query.filter)
       if (Object.keys(filter).length > 0) {
          products = await Product.find(filter).populate('category').populate('subcategory').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
 
@@ -63,12 +75,12 @@ export const getAll = async (req, res) => {
       else
          products = await Product.find().populate('category').populate('subcategory').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
 
-      res.status(200).json({
+      return res.status(200).json({
          'products': products,
          'totalPage': totalPage
       });
    } catch (error) {
-      res.status(400).json({ message: 'error', error })
+     return  res.status(400).json({ msg: error.message })
    }
 
 }
@@ -78,9 +90,10 @@ export const get = async (req, res) => {
    try {
       const id = req.params.id;
       const product = await Product.findById(id).populate('category').populate('subcategory');
-      res.status(200).json(product);
+      
+      return res.status(200).json({success : true,product});
    } catch (error) {
-      res.status(400).json({ error });
+      return res.status(400).json({msg : error.message });
    }
 }
 
@@ -242,6 +255,7 @@ export const update = async (req, res) => {
          images: imgs,
          brand: req.body.brand,
          price: req.body.price,
+         oldPrice: req.body.oldPrice,
          category: req.body.category,
          subcategory: req.body.subcategory,
          countInStock: req.body.countInStock,

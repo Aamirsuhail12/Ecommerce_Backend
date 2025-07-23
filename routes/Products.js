@@ -4,9 +4,9 @@ import { create, getAll, get, deletes, update } from '../controller/Products.js'
 
 const router = express.Router();
 
-router.get('/', getAll)
+router.post('/create', create)
+    .get('/', getAll)
     .get('/:id', get)
-    .post('/create',create)
     .delete('/:id', deletes)
     .put('/:id', update)
 

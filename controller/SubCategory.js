@@ -9,7 +9,10 @@ export const getAll = async (req, res) => {
    // console.log('server console will display in terminal',req.query)
    try {
       let currentPage = Number(req.query.page) || 1;
-      let filtercategory = req.query.filtercategory;
+      let filtercategory = {};
+      if (req?.query?.category) {
+         filtercategory = JSON.parse(req.query.category);
+      }
       const totalElements = await SubCategory.countDocuments();
       const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
       const totalPage = Math.ceil(totalElements / elementPerPage);
@@ -20,23 +23,31 @@ export const getAll = async (req, res) => {
 
       let subcategory = [];
 
-      
-      if (filtercategory) {
-         const category = await Categories.find({'name' : filtercategory});
-         subcategory = await SubCategory.find({ 'category': category[0]._id }).populate('category').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
+      if (Object.keys(filtercategory).length === 0) {
+
+         if (currentPage === -1)
+            subcategory = await SubCategory.find().populate('category');
+         else
+            subcategory = await SubCategory.find().populate('category').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
+
+         res.status(200).json(
+            {
+               'subcategory': subcategory,
+               'totalPage': totalPage
+            }
+         );
       }
-      else if(currentPage === -1)
-         subcategory = await SubCategory.find().populate('category');
+      else {
+         const category = await Categories.find({ 'name': filtercategory });
+         subcategory = await SubCategory.find({ 'category': category[0]._id }).populate('category');
+         res.status(200).json(
+            {
+               'subcategory': subcategory,
+               'totalPage': totalPage
+            }
+         );
+      }
 
-      else
-      subcategory = await SubCategory.find().populate('category').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
-
-      res.status(200).json(
-         {
-            'subcategory': subcategory,
-            'totalPage': totalPage
-         }
-      );
    } catch (error) {
       res.status(400).json(error);
    }
