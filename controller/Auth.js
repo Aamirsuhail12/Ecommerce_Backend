@@ -2,7 +2,7 @@
 import User from "../model/User.js"
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import SubCategory from "../model/SubCategory.js";
+import admin from "../firebaseAdmin.js";
 
 export const SignUp = async (req, res) => {
 
@@ -66,8 +66,14 @@ export const SignIn = async (req, res) => {
 
         const user = await User.findOne({ email });
 
+
         if (!user) {
             return res.status(404).json({ msg: 'Please Create Account User not found' });
+        }
+
+        if (!user?.password) {
+            return res.status(404).json({ msg: 'Please continue with google or set password' });
+
         }
 
         // console.log('user in signin',user);
@@ -92,6 +98,48 @@ export const SignIn = async (req, res) => {
     } catch (error) {
         console.log('error in singin', error);
         return res.status(500).json({ msg: error.message });
+    }
+}
+
+export const SignInWithGoogle = async (req, res) => {
+
+
+    try {
+
+        // 1. Verify Firebase ID token
+        const decodedToken = await admin.auth().verifyIdToken(req.body.token);
+
+        const { name, picture, email } = decodedToken;
+
+        const user = await User.findOne({ email });
+        let token = null
+        if (!user) {
+
+            const u = new User({
+                name,
+                email,
+                password: null,
+                image: picture
+            })
+            await u.save();
+            token = await jwt.sign({ id: u._id, email: u.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        } else {
+
+            token = await jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        }
+
+        res.cookie("token", token, {
+            httpOnly: true,         // Cannot be accessed by frontend JavaScript
+            secure: false,           // Only over HTTPS (set to false for development)
+            sameSite: 'Strict',     // Prevent CSRF
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            // maxAge: 1 * 60 * 1000 // 1 minutes
+        })
+
+        return res.status(200).json({ success: true, msg: 'Login successfull' })
+
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message });
     }
 }
 

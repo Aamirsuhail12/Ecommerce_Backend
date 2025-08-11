@@ -41,8 +41,7 @@ const buildFilter = async (filter) => {
       fil._id.$ne = filter._id
    }
 
-   if(filter.isFeatured)
-   {
+   if (filter.isFeatured) {
       fil.isFeatured = true;
    }
 
@@ -80,7 +79,7 @@ export const getAll = async (req, res) => {
          'totalPage': totalPage
       });
    } catch (error) {
-     return  res.status(400).json({ msg: error.message })
+      return res.status(400).json({ msg: error.message })
    }
 
 }
@@ -90,10 +89,10 @@ export const get = async (req, res) => {
    try {
       const id = req.params.id;
       const product = await Product.findById(id).populate('category').populate('subcategory');
-      
-      return res.status(200).json({success : true,product});
+
+      return res.status(200).json({ success: true, product });
    } catch (error) {
-      return res.status(400).json({msg : error.message });
+      return res.status(400).json({ msg: error.message });
    }
 }
 
@@ -276,4 +275,31 @@ export const update = async (req, res) => {
    }
 }
 
+export const search = async (req, res) => {
+   
+   const { q } = req.query;
 
+   if (!q) {
+      return res.status(400).json({ success: false, msg: "Query is required" });
+   }
+   try {
+      const searchRegex = new RegExp(q, 'i');
+
+      const categoryMatched = await Categories.findOne({ name: { $regex: searchRegex } });
+      const subcategoryMatched = await Subcategory.findOne({ subcategory: { $regex: searchRegex } });
+
+      const products = await Product.find({
+         $or: [
+            { name: { $regex: searchRegex } },
+            { category: categoryMatched?._id },
+            { subcategory: subcategoryMatched?._id },
+            { brand: { $regex: searchRegex } }
+         ]
+      }).populate('category').populate('subcategory');
+
+      return res.status(200).json({ success: true, products });
+   } catch (error) {
+
+      return res.status(500).json({ success: false, msg: error?.message });
+   }
+}

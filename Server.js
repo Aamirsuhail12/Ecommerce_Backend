@@ -12,7 +12,8 @@ import ProductsRouter from './routes/Products.js';
 import SubCategoryRouter from './routes/SubCategory.js'
 import AuthRouter from './routes/Auth.js';
 import UserRouter from './routes/User.js'
-import ReviewRounter from './routes/Review.js';
+import ReviewRouter from './routes/Review.js';
+import OrderRouter from './routes/Order.js'
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,6 +22,11 @@ import cookieParser from 'cookie-parser';
 import fs from 'fs/promises'
 
 const app = express();
+
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
+    next();
+});
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME, // Replace with your Cloudinary cloud name
@@ -79,7 +85,11 @@ async function main() {
 }
 
 // routes
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/access', express.static(path.join(__dirname, 'uploads')));
+// ➡️ uploads folder (backend me h) ke andar ke files ko browser se directly access karne dena.
+// http://localhost:5000/access/filename.jpg (frontend se request)
+
+
 /*
 app.use('/uploads', upload.array('images'), (req, res) => {
 
@@ -142,8 +152,28 @@ app.use('/users', UserRouter);
 app.use('/categories', CategoriesRouter);
 app.use('/products', ProductsRouter);
 app.use('/subcategory', SubCategoryRouter);
-app.use('/review', ReviewRounter);
+app.use('/review', ReviewRouter);
+app.use('/orders', OrderRouter);
 
+app.post("/verify-token", async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        const { uid, email, name, picture } = decodedToken;
+
+        // Create JWT for backend session
+        const backendToken = jwt.sign({ uid, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.json({
+            success: true,
+            user: { uid, email, name, picture },
+            backendToken
+        });
+    } catch (error) {
+        res.status(401).json({ success: false, message: "Invalid token", error: error.message });
+    }
+});
 
 app.listen(process.env.PORT, '127.0.0.1', () => {
     console.log(`Server running on port ${process.env.PORT}`);

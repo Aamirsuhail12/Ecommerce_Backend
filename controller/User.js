@@ -3,6 +3,8 @@
 import User from '../model/User.js';
 import Products from '../model/Products.js';
 import bcrypt from 'bcrypt'
+import nodemailer from "nodemailer";
+import { rmSync } from 'fs';
 
 export const getAll = async (req, res) => {
     try {
@@ -127,6 +129,77 @@ export const Profile = async (req, res) => {
     } catch (error) {
         console.log('Erron in getting profile', error.message);
         return res.status(500).json({ success: false, msg: error.message, isLogin: false });
+    }
+}
+
+export const editProfile = async (req, res) => {
+
+    try {
+        const { email } = req.user;
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                msg: 'User Not Found'
+            })
+        }
+
+        if (req?.body?.name === '') {
+            return res.status(500).json({ success: false, msg: 'Name is required' })
+        }
+
+        if (req?.body?.phone === '') {
+            return res.status(500).json({ success: false, msg: 'Phone is required' })
+        }
+
+        try {
+            let payload = {
+                name: req?.body?.name,
+                phone: req?.body?.phone
+            }
+            if (req?.body?.image) {
+                payload = { ...payload, image: req?.body?.image }
+            }
+            await User.findByIdAndUpdate(user?._id, payload, { new: true });
+            return res.status(200).json({ success: true });
+        } catch (error) {
+
+            return res.status(500).json({ success: false, msg: error?.message })
+        }
+
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message })
+    }
+
+}
+
+export const changePassword = async (req, res) => {
+
+    try {
+        const { email } = req.user;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, msg: 'User Not Found' });
+        }
+
+        const ismatched = await bcrypt.compare(req.body.password, user.password);
+
+        if (!ismatched) {
+            return res.status(400).json({ success: false, msg: 'Wrong password' });
+        }
+
+        const hashPassword = await bcrypt.hash(req.body.newpassword, 10);
+
+        await User.findByIdAndUpdate(user._id, { password: hashPassword });
+
+        return res.status(200).json({ success: true });
+
+
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message });
     }
 }
 
@@ -348,7 +421,7 @@ export const getWishList = async (req, res) => {
         ]
     });
 
-    
+
     if (!user) {
         return res.status(400).json({ success: false, msg: "User is not Found" });
     }
@@ -376,6 +449,127 @@ export const deleteWishList = async (req, res) => {
         user.wishList = user?.wishList?.filter((proid) => proid.toString() !== id);
         await user.save();
         return res.status(200).json({ success: true, id });
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message });
+    }
+}
+
+export const SendorReSendOtp = async (req, res) => {
+    const toEmail = req.body.email;
+
+    if (!toEmail) {
+        return res.status(400).json({ success: false, msg: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: toEmail });
+
+    if (!user) {
+        return res.status(400).json({ success: false, msg: "User Not Found" });
+    }
+
+    const otp_ = Math.floor(100000 + Math.random() * 900000).toString();
+    const date = Date.now();
+
+    try {
+        await User.findByIdAndUpdate(user._id, {
+            otp: otp_,
+            isotpExpire: date + 2 * 60 * 1000, // expire in 2 minutes
+            otpcreateAt: date
+        }, { new: true });
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.GOOGLE_GMAIL,
+                pass: process.env.GOOGLE_APP_PASS
+            }
+        });
+
+        const mailOptions = {
+            from: `"My Ecommerce App" <${process.env.GOOGLE_GMAIL}>`,
+            to: toEmail,
+            subject: "Your OTP Code",
+            html: `<p>Your OTP is: <b>${otp_}</b></p><p>This will expire in 2 minutes.</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        console.log(`OTP sent to ${toEmail}: ${otp_}`);
+        return res.status(200).json({ success: true, msg: "OTP sent successfully" });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message });
+    }
+};
+
+export const verifyOTP = async (req, res) => {
+
+    const email = req.body?.email;
+    const otp = req.body?.otp;
+
+    if (!email) {
+        return res.status(400).json({ success: false, msg: 'Email is required' });
+    }
+
+    if (!otp) {
+        return res.status(400).json({ success: false, msg: 'OTP is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return res.status(400).json({ success: false, msg: 'User Not Found' });
+    }
+    try {
+        if (otp !== user?.otp) {
+            return res.status(400).json({ success: false, msg: 'Invalid OTP' });
+        }
+
+        if (Date.now() > user.isotpExpire) {
+            return res.status(400).json({ success: false, msg: 'OTP expired, click on resend OTP' });
+        }
+
+
+        await User.findByIdAndUpdate(user._id, {
+            otp: null,
+            isotpExpire: null,
+            otpcreateAt: null
+        })
+        return res.status(200).json({ success: true, msg: 'OTP verified successfully!' })
+    } catch (error) {
+        return res.status(500).json({ success: false, msg: error?.message });
+    }
+}
+
+export const ResetPassword = async (req, res) => {
+
+    const email = req?.body?.email;
+    const password = req?.body?.password;
+
+    if (!email) {
+        return res.status(400).json({ success: false, msg: 'Email is requied' });
+    }
+
+    if (!password) {
+        return res.status(400).json({ success: false, msg: 'Password is required' });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return res.status(400).json({ success: false, msg: 'User Not Found' });
+    }
+
+    try {
+
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        await User.findByIdAndUpdate(user._id, { password: hashPassword }, { new: true });
+
+        return res.status(200).json({ success: true, msg: 'reset password successfully!' })
+
     } catch (error) {
         return res.status(500).json({ success: false, msg: error?.message });
     }

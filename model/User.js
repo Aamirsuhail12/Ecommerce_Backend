@@ -25,8 +25,7 @@ const userSchema = new Schema({
         }
     },
     password: {
-        type: String,
-        required: true
+        type: String
     },
     phone: {
         type: String,
@@ -37,6 +36,9 @@ const userSchema = new Schema({
             },
             message: props => `${props.value} is not a valid phone number!`
         }
+    },
+    image: {
+        type: String
     },
     recentlyviewedProducts: [{
         type: Schema.Types.ObjectId,
@@ -49,7 +51,19 @@ const userSchema = new Schema({
         weight: { type: String },
         RAM: { type: String }
     }],
-    wishList : [{type: Schema.Types.ObjectId,ref : 'Product'}],
+    wishList: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+    otp: {
+        type: String,
+        default: null
+    },
+    isotpExpire: {
+        type: String,
+        default: null
+    },
+    otpcreateAt: {
+        type: String,
+        default: null
+    },
     isAdmin: {
         type: Boolean,
         default: false
