@@ -62,7 +62,7 @@ const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 
 app.use(cors({
     origin: (origin, callback) => {
-        console.log('Origin received:', origin); // 📌 This prints every time browser requests
+     // 📌 This prints every time browser requests
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -126,8 +126,6 @@ app.use('/uploads', upload.array('images'), async (req, res) => {
             req.files.map(file => fs.unlink(file.path))
         );
 
-        console.log('urls', imageUrls)
-
         res.json({ message: 'Files uploaded', urls: imageUrls });
     } catch (err) {
         console.error('Upload error:', err);
@@ -142,7 +140,6 @@ app.get('/coutrylist', async (req, res) => {
         const response = await axios.get('https://api.first.org/data/v1/countries');
         res.json(response.data);
     } catch (error) {
-        console.log("this is error", error.message);
         res.json(error.message);
     }
 })

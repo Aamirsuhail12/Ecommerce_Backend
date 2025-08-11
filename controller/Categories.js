@@ -6,14 +6,14 @@ import cloudinary from 'cloudinary';
 
 export const getAll = async (req, res) => {
    
-   // console.log('server console will display in terminal',req.query)
+   
    try {
       let currentPage = Number(req.query.page) || 1;
       const totalElements = await Categories.countDocuments();
       const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage ) || 4);
       const totalPage = Math.ceil(totalElements / elementPerPage);
 
-      console.log(req.query,currentPage,totalElements,elementPerPage,totalPage)
+      
       if(currentPage < 0)
          currentPage = 1; 
 

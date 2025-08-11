@@ -3,55 +3,51 @@
 import Categories from '../model/Categories.js';
 import SubCategory from '../model/SubCategory.js';
 
-
 export const getAll = async (req, res) => {
+  try {
+    // Get query params
+    const category = req.query.category ? decodeURIComponent(req.query.category) : null;
+    let currentPage = Number(req.query.page) || 1;
 
-   // console.log('server console will display in terminal',req.query)
-   try {
-      let currentPage = Number(req.query.page) || 1;
-      let filtercategory = {};
-      if (req?.query?.category) {
-         filtercategory = JSON.parse(req.query.category);
+    let filtercategory = category || null;
+
+    const totalElements = await SubCategory.countDocuments();
+    const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
+    const totalPage = Math.ceil(totalElements / elementPerPage);
+
+    if (currentPage < 0) currentPage = 1;
+
+    let subcategory = [];
+
+    console.log("filter category:", filtercategory);
+
+    if (!filtercategory) {
+      if (currentPage === -1) {
+        subcategory = await SubCategory.find().populate("category");
+      } else {
+        subcategory = await SubCategory.find()
+          .populate("category")
+          .skip((currentPage - 1) * elementPerPage)
+          .limit(elementPerPage);
       }
-      const totalElements = await SubCategory.countDocuments();
-      const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
-      const totalPage = Math.ceil(totalElements / elementPerPage);
-
-      // console.log(req.query, currentPage, totalElements, elementPerPage, totalPage)
-      if (currentPage < 0)
-         currentPage = 1;
-
-      let subcategory = [];
-
-      if (Object.keys(filtercategory).length === 0) {
-
-         if (currentPage === -1)
-            subcategory = await SubCategory.find().populate('category');
-         else
-            subcategory = await SubCategory.find().populate('category').skip((currentPage - 1) * elementPerPage).limit(elementPerPage);
-
-         res.status(200).json(
-            {
-               'subcategory': subcategory,
-               'totalPage': totalPage
-            }
-         );
+    } else {
+      const categoryDoc = await Categories.findOne({ name: filtercategory });
+      if (!categoryDoc) {
+        return res.status(404).json({ message: "Category not found" });
       }
-      else {
-         const category = await Categories.find({ 'name': filtercategory });
-         subcategory = await SubCategory.find({ 'category': category[0]._id }).populate('category');
-         res.status(200).json(
-            {
-               'subcategory': subcategory,
-               'totalPage': totalPage
-            }
-         );
-      }
+      subcategory = await SubCategory.find({ category: categoryDoc._id }).populate("category");
+    }
 
-   } catch (error) {
-      res.status(400).json(error);
-   }
-}
+    res.status(200).json({
+      subcategory,
+      totalPage,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json(error);
+  }
+};
+
 
 export const get = async (req, res) => {
 

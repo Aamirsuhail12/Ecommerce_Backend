@@ -36,7 +36,7 @@ export const get = async (req, res) => {
         return res.status(200).json({ success: true, user })
 
     } catch (error) {
-        console.log('Error fetching user:', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message });
     }
 }
@@ -67,7 +67,7 @@ export const replace = async (req, res) => {
         return res.status(200).json({ success: true, user: userWithoutPassword })
 
     } catch (error) {
-        console.log('Error in Updating user', error.message);
+        
         return res.status(500).json({ success: false, error: error.message })
     }
 }
@@ -92,7 +92,7 @@ export const update = async (req, res) => {
         return res.status(200).json({ success: true, user })
 
     } catch (error) {
-        console.log('Error in Replacing user', error.message);
+
         return res.status(500).json({ success: false, error: error.message })
     }
 }
@@ -110,7 +110,7 @@ export const deletes = async (req, res) => {
         return res.status(200).json({ success: true, message: 'User delete successfully...', user })
 
     } catch (error) {
-        console.log('Error in Deleting user', error.message);
+
         return res.status(500).json({ success: false, error: error.message })
     }
 }
@@ -127,7 +127,7 @@ export const Profile = async (req, res) => {
         const { password: pwd, ...userWithoutPassword } = user._doc;
         return res.status(200).json({ success: true, user: userWithoutPassword, isLogin: true });
     } catch (error) {
-        console.log('Erron in getting profile', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message, isLogin: false });
     }
 }
@@ -232,7 +232,7 @@ export const CreateRecentlyViewed = async (req, res) => {
         return res.status(200).json({ success: true, msg: 'RecentlyviewedProduct added successfully!' })
 
     } catch (error) {
-        console.log('Error in creating recentlyviewed', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message })
     }
 }
@@ -258,7 +258,7 @@ export const getAllRecentlyViewed = async (req, res) => {
         return res.status(200).json({ success: true, recentlyviewedProducts: user.recentlyviewedProducts });
 
     } catch (error) {
-        console.log('Error in getting recently viewed products', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message })
     }
 }
@@ -291,7 +291,7 @@ export const AddToCart = async (req, res) => {
         return res.status(200).json({ success: true, msg: 'Product added to cart successfully!', cart: updateduser?.cart })
 
     } catch (error) {
-        console.log('Error in product add to cart', error?.message);
+        
         return res.status(500).json({ success: false, msg: error?.message })
     }
 }
@@ -309,7 +309,7 @@ export const getCart = async (req, res) => {
         return res.status(200).json({ success: true, cart: user.cart })
 
     } catch (error) {
-        console.log('Error in getting cart', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message })
     }
 }
@@ -354,7 +354,7 @@ export const UpdateCartProduct = async (req, res) => {
 
         return res.status(200).json({ success: true, msg: 'Quantity update successfully!' })
     } catch (error) {
-        console.log('Error in updating product in cart', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message })
     }
 }
@@ -379,7 +379,7 @@ export const deleteCartProduct = async (req, res) => {
         await user.save();
         return res.status(200).json({ success: true, msg: 'Product delete from cart successfully!', cart: user?.cart })
     } catch (error) {
-        console.log('Error in deleting cart product', error.message);
+        
         return res.status(500).json({ success: false, msg: error.message })
     }
 }
@@ -496,7 +496,7 @@ export const SendorReSendOtp = async (req, res) => {
 
         await transporter.sendMail(mailOptions);
 
-        console.log(`OTP sent to ${toEmail}: ${otp_}`);
+        
         return res.status(200).json({ success: true, msg: "OTP sent successfully" });
 
     } catch (error) {

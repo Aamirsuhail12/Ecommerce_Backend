@@ -53,16 +53,12 @@ export const getAll = async (req, res) => {
       let currentPage = Number(req.query.page) || 1;
       let filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter)) : {};
 
-      console.log('fil', filter)
       filter = await buildFilter(filter);
-      console.log('fil after', filter)
-
 
       const totalElements = await Product.countDocuments(filter);
       const elementPerPage = currentPage === -1 ? totalElements : (Number(req.query.PerPage) || 4);
       const totalPage = Math.ceil(totalElements / elementPerPage);
 
-      console.log(req.query, currentPage, totalElements, elementPerPage, totalPage)
       if (currentPage < 0)
          currentPage = 1;
 
@@ -150,7 +146,6 @@ export const create = async (req, res) => {
       })
 
       const pro = await product.save();
-      console.log('product', pro);
 
       res.status(200).json(pro);
    } catch (error) {

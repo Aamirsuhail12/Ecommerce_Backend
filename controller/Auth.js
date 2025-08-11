@@ -29,8 +29,6 @@ export const SignUp = async (req, res) => {
             isAdmin
         })
 
-        // console.log('user : ',user);
-
         await user.save();
 
         const { password: pwd, ...userWithoutPassword } = user._doc;
@@ -76,8 +74,6 @@ export const SignIn = async (req, res) => {
 
         }
 
-        // console.log('user in signin',user);
-
         const isSame = await bcrypt.compare(password, user.password);
         if (!isSame) {
             return res.status(401).json({ msg: 'invalid credentials' })
@@ -96,7 +92,7 @@ export const SignIn = async (req, res) => {
 
         return res.status(200).json({ msg: 'Login Successful!' })
     } catch (error) {
-        console.log('error in singin', error);
+        
         return res.status(500).json({ msg: error.message });
     }
 }

@@ -6,7 +6,7 @@ export const addOrder = async (req, res) => {
 
     const { email } = req.user;
     const user = await User.findOne({ email });
-    console.log('u', user);
+    
     if (!req?.body?.name || !req?.body?.phone || !req?.body?.email || !req?.body?.country ||
         !req?.body?.landmark || !req?.body?.street || !req?.body?.town || !req?.body?.state ||
         !req?.body?.pincode || !req?.body?.products || !req?.body?.totalamount || !req?.body?.orderStatus) {
