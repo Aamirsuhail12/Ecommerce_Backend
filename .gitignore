@@ -2,11 +2,10 @@
 /node_modules
 /.pnp
 .pnp.js
-/sevice-account-key.json
+/service-account-key.json
 
 # environment variables
 /.env
-.env
 .env.local
 .env.development.local
 .env.test.local
