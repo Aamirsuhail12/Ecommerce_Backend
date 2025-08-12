@@ -38,7 +38,7 @@ export const SignUp = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
             secure: true,           // Only over HTTPS (set to false for development)
-            sameSite: 'Strict',     // Prevent CSRF
+            sameSite: 'None',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             // maxAge: 1 * 60 * 1000 // 1 minutes
         })
@@ -86,7 +86,7 @@ export const SignIn = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
             secure: true,           // Only over HTTPS (set to false for development)
-            sameSite: 'Strict',     // Prevent CSRF
+            sameSite: 'None',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         })
 
@@ -127,7 +127,7 @@ export const SignInWithGoogle = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
             secure: true,           // Only over HTTPS (set to false for development)
-            sameSite: 'Strict',     // Prevent CSRF
+            sameSite: 'None',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             // maxAge: 1 * 60 * 1000 // 1 minutes
         })
@@ -145,7 +145,7 @@ export const Logout = async (req, res) => {
         res.clearCookie('token', {
             httpOnly: true,
             secure: true, // Set true if using HTTPS
-            sameSite: 'Strict' // Or 'Strict'/'Lax' based on setup
+            sameSite: 'None' // Or 'Strict'/'Lax' based on setup
         })
 
         return res.status(200).json({ success: true, msg: 'logout successful!' })
