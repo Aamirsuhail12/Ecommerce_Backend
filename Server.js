@@ -172,7 +172,7 @@ app.post("/verify-token", async (req, res) => {
     }
 });
 
-app.listen(process.env.PORT, '127.0.0.1', () => {
+app.listen(process.env.PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${process.env.PORT}`);
 })
 
