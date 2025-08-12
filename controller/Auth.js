@@ -37,7 +37,7 @@ export const SignUp = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
-            secure: false,           // Only over HTTPS (set to false for development)
+            secure: true,           // Only over HTTPS (set to false for development)
             sameSite: 'Strict',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             // maxAge: 1 * 60 * 1000 // 1 minutes
@@ -85,7 +85,7 @@ export const SignIn = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
-            secure: false,           // Only over HTTPS (set to false for development)
+            secure: true,           // Only over HTTPS (set to false for development)
             sameSite: 'Strict',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         })
@@ -126,7 +126,7 @@ export const SignInWithGoogle = async (req, res) => {
 
         res.cookie("token", token, {
             httpOnly: true,         // Cannot be accessed by frontend JavaScript
-            secure: false,           // Only over HTTPS (set to false for development)
+            secure: true,           // Only over HTTPS (set to false for development)
             sameSite: 'Strict',     // Prevent CSRF
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             // maxAge: 1 * 60 * 1000 // 1 minutes
@@ -144,7 +144,7 @@ export const Logout = async (req, res) => {
     try {
         res.clearCookie('token', {
             httpOnly: true,
-            secure: false, // Set true if using HTTPS
+            secure: true, // Set true if using HTTPS
             sameSite: 'Strict' // Or 'Strict'/'Lax' based on setup
         })
 
