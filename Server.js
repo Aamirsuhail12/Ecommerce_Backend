@@ -58,6 +58,7 @@ const upload = multer({ storage });
 //   credentials: true
 // }));
 
+/*
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 
 app.use(cors({
@@ -71,6 +72,14 @@ app.use(cors({
     },
     credentials: true   // allow sending cookies
 }));
+*/
+
+
+app.use(cors({
+    origin: "https://ecommerce-frontend-nu-rouge.vercel.app",
+    credentials: true
+}));
+ 
 
 app.use(express.json());
 app.use(cookieParser());
