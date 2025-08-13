@@ -20,6 +20,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import cookieParser from 'cookie-parser';
 import fs from 'fs/promises'
+import streamifier from 'streamifier';
 
 const app = express();
 
@@ -37,6 +38,7 @@ cloudinary.config({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+/*
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, 'uploads');
@@ -49,7 +51,7 @@ const storage = multer.diskStorage({
 
 //middleware
 const upload = multer({ storage });
-
+*/
 
 //middlewares
 // app.use(cors()); //only for browser security.
@@ -127,6 +129,7 @@ app.use('/uploads', upload.array('images'), (req, res) => {
 });
 */
 
+/*
 app.use('/uploads', upload.array('images'), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
@@ -150,6 +153,43 @@ app.use('/uploads', upload.array('images'), async (req, res) => {
         console.error('Upload error:', err);
         res.status(500).json({ error: 'Something went wrong' });
     }
+});
+*/
+
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+app.post('/uploads', upload.array('images', 5), async (req, res) => {
+  try {
+    if (!req.files?.length) {
+      return res.status(400).json({ error: 'No images uploaded' });
+    }
+
+    const uploadToCloudinary = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.v2.uploader.upload_stream(
+          { folder: 'products' },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
+        streamifier.createReadStream(fileBuffer).pipe(stream);
+      });
+    };
+
+    const uploaded = await Promise.all(
+      req.files.map(file => uploadToCloudinary(file.buffer))
+    );
+
+    res.json({
+      message: 'Files uploaded successfully',
+      urls: uploaded.map(file => file.secure_url)
+    });
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 
