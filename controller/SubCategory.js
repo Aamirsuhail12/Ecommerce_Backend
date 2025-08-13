@@ -61,6 +61,13 @@ export const get = async (req, res) => {
 }
 
 export const create = async (req, res) => {
+
+      const {email} = req.user;
+      const user = await User.findOne({email});
+   
+      if(user.isAdmin === false){
+         return res.status(400).json({success : false,msg : 'Only admin can create subcategory'});
+      }
    try {
 
       const subcategory = new SubCategory({
@@ -80,6 +87,12 @@ export const create = async (req, res) => {
 
 export const deletes = async (req, res) => {
 
+      const {email} = req.user;
+      const user = await User.findOne({email});
+   
+      if(user.isAdmin === false){
+         return res.status(400).json({success : false,msg : 'Only admin can delete subcategory'});
+      }
    try {
       const id = req.params.id;
       const subcategory = await SubCategory.findByIdAndDelete(id);
@@ -94,6 +107,12 @@ export const deletes = async (req, res) => {
 
 export const update = async (req, res) => {
 
+      const {email} = req.user;
+      const user = await User.findOne({email});
+   
+      if(user.isAdmin === false){
+         return res.status(400).json({success : false,msg : 'Only admin can edit subcategory'});
+      }
    try {
 
 
