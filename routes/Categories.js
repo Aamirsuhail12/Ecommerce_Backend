@@ -1,7 +1,7 @@
 
 import express from "express";
 import { create, getAll, get, deletes, update} from '../controller/Categories.js';
-import Authentication from '../controller/Auth.js'
+import {Authentication }from '../controller/Auth.js'
 const router = express.Router();
 
 router.get('/', getAll)
