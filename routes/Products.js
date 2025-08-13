@@ -9,7 +9,7 @@ router.post('/create',Authentication, create)
     .get('/search', search)
     .get('/:id', get)
     .get('/', getAll)
-    .delete('/:id',Authentication, deletes)
+    .delete('/:id', deletes)
     .put('/:id',Authentication, update)
 
 export default router;
