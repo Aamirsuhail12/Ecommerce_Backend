@@ -4,7 +4,6 @@ import User from '../model/User.js';
 import Products from '../model/Products.js';
 import bcrypt from 'bcrypt'
 import nodemailer from "nodemailer";
-import { rmSync } from 'fs';
 
 export const getAll = async (req, res) => {
     try {
@@ -190,8 +189,12 @@ export const changePassword = async (req, res) => {
         if (!ismatched) {
             return res.status(400).json({ success: false, msg: 'Wrong password' });
         }
+        if(req.body.password === req.body.newpassword){
+            return res.status(400).json({success : false,msg : 'Password and new Password are same'})
+        }
 
         const hashPassword = await bcrypt.hash(req.body.newpassword, 10);
+
 
         await User.findByIdAndUpdate(user._id, { password: hashPassword });
 

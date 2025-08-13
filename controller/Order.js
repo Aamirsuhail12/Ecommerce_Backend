@@ -30,7 +30,9 @@ export const addOrder = async (req, res) => {
             orderStatus: req?.body?.orderStatus
         })
 
+        user.cart = [];
         await odr.save()
+        await user.save();
 
         const order = await Order.findById(odr._id).populate({
             path: 'products',
