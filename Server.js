@@ -75,10 +75,20 @@ app.use(cors({
 */
 
 
+const allowedOrigins = ['http://localhost:3000', 'https://ecommerce-frontend-nu-rouge.vercel.app'];
+
 app.use(cors({
-    origin: "https://ecommerce-frontend-nu-rouge.vercel.app",
-    credentials: true
+    origin: (origin, callback) => {
+     // 📌 This prints every time browser requests
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true   // allow sending cookies
 }));
+
  
 
 app.use(express.json());
