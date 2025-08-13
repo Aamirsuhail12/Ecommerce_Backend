@@ -156,12 +156,7 @@ export const create = async (req, res) => {
 
 export const create = async (req, res) => {
 
-   const { email } = req.user;
-   const user = await User.findOne({ email });
-
-   if (user.isAdmin === false) {
-      return res.status(400).json({ success: false, msg: 'Only admin can create product' });
-   }
+ 
    try {
       const isvalidcategory = await Categories.findById(req.body.category);
       if (!isvalidcategory) {
@@ -208,32 +203,22 @@ export const create = async (req, res) => {
 
 export const deletes = async (req, res) => {
 
-   const { email } = req.user;
-   const user = await User.findOne({ email });
 
-   if (user.isAdmin === false) {
-      return res.status(400).json({ success: false, msg: 'Only admin can delete product' });
-   }
    try {
       const id = req.params.id;
       const product = await Product.findByIdAndDelete(id);
-      res.status(200).json({
+      return res.status(200).json({
          message: 'Deletion sucessfully',
          product
       })
    } catch (error) {
-      res.status(400).json({ error })
+      return res.status(400).json({ error })
    }
 }
 
 export const update = async (req, res) => {
 
-   const { email } = req.user;
-   const user = await User.findOne({ email });
-
-   if (user.isAdmin === false) {
-      return res.status(400).json({ success: false, msg: 'Only admin can edit product' });
-   }
+ 
    try {
       const isvalidcategory = await Categories.findById(req.body.category);
       if (!isvalidcategory) {

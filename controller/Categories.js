@@ -44,12 +44,7 @@ export const get = async (req, res) => {
 
 export const create = async (req, res) => {
 
-   const { email } = req.user;
-   const user = await User.findOne({ email });
-
-   if (user.isAdmin === false) {
-      return res.status(400).json({ success: false, msg: 'Only admin can create category' });
-   }
+ 
    try {
       const images = req.body.images;
 
@@ -85,12 +80,7 @@ export const create = async (req, res) => {
 
 export const deletes = async (req, res) => {
 
-   const { email } = req.user;
-   const user = await User.findOne({ email });
-
-   if (user.isAdmin === false) {
-      return res.status(400).json({ success: false, msg: 'Only admin can delete category' });
-   }
+ 
    try {
       const id = req.params.id;
       const category = await Categories.findByIdAndDelete(id);
@@ -105,12 +95,7 @@ export const deletes = async (req, res) => {
 
 export const update = async (req, res) => {
 
-      const {email} = req.user;
-   const user = await User.findOne({email});
-
-   if(user.isAdmin === false){
-      return res.status(400).json({success : false,msg : 'Only admin can edit category'});
-   }
+ 
    try {
       const images = req.body.images;
 
