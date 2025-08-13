@@ -212,6 +212,7 @@ export const deletes = async (req, res) => {
       const user = await User.findOne({email});
    
       if(user.isAdmin === false){
+         console.log('isd');
          return res.status(400).json({success : false,msg : 'Only admin can delele product'});
       }
    try {
