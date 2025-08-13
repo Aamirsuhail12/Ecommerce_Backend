@@ -75,7 +75,7 @@ app.use(cors({
 */
 
 
-const allowedOrigins = ['http://localhost:3000', 'https://ecommerce-frontend-nu-rouge.vercel.app','https://ecommerce-admin-du35.vercel.app'];
+const allowedOrigins = ['http://localhost:3000', 'https://ecommerce-frontend-nu-rouge.vercel.app','https://emc-admin-cyan.vercel.app'];
 
 app.use(cors({
     origin: (origin, callback) => {
