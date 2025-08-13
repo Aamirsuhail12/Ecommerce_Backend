@@ -208,13 +208,7 @@ export const create = async (req, res) => {
 
 export const deletes = async (req, res) => {
 
-      const {email} = req.user;
-      const user = await User.findOne({email});
-   
-      if(user.isAdmin === false){
-         console.log('isd');
-         return res.status(400).json({success : false,msg : 'Only admin can delele product'});
-      }
+    
    try {
       const id = req.params.id;
       const product = await Product.findByIdAndDelete(id);
